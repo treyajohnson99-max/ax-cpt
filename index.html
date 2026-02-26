@@ -13,6 +13,7 @@
 
 <script src="js/jquery.min.js"></script>
 <script src="js/math.min.js"></script>
+
 <script src="js/jspsych/jspsych.js"></script>
 <script src="js/jspsych/plugins/jspsych-text.js"></script>
 <script src="js/jspsych/poldrack_plugins/jspsych-poldrack-text.js"></script>
@@ -23,17 +24,28 @@
 <script src="js/jspsych/plugins/jspsych-survey-text.js"></script>
 <script src="js/jspsych/poldrack_plugins/jspsych-single-stim-button.js"></script>
 <script src="js/jspsych/poldrack_plugins/poldrack_utils.js"></script>
+
 <script src="experiment.js"></script>
 
 <script>
 $(document).ready(function() {
 
+    // Safely grab participantID if coming from Qualtrics
+    var urlParams = new URLSearchParams(window.location.search);
+    var participant_id = urlParams.get('participantID');
+
     jsPsych.init({
         timeline: ax_cpt_experiment,
-        display_element: "getDisplayElement",
         fullscreen: true,
 
-        // optional: keep your ID function on each trial
+        on_start: function() {
+            if (participant_id) {
+                jsPsych.data.addProperties({
+                    participant_id: participant_id
+                });
+            }
+        },
+
         on_trial_finish: function(data){
             if (typeof addID === 'function') {
                 addID('ax-cpt');
@@ -41,21 +53,17 @@ $(document).ready(function() {
         },
 
         on_finish: function() {
-            // get participantID from URL (from Qualtrics iframe)
-            var urlParams = new URLSearchParams(window.location.search);
-            var participant_id = urlParams.get('participantID'); 
-            
-            // add participantID to all trials
-            jsPsych.data.addProperties({ participant_id: participant_id });
-
-            // get all jsPsych data as CSV
             var jspsych_data = jsPsych.data.get().csv();
 
-            // send CSV data to Qualtrics Embedded Data
-            window.parent.postMessage({
-                type: 'jspsych-data',
-                data: jspsych_data
-            }, "*");
+            // send data back to Qualtrics
+            if (window.parent) {
+                window.parent.postMessage({
+                    type: 'jspsych-data',
+                    data: jspsych_data
+                }, "*");
+            }
+
+            console.log("Experiment complete.");
         }
     });
 

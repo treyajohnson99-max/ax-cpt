@@ -1,74 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="robots" content="noindex">
-    <title>The Experiment Factory AX-CPT</title>
-
-    <!-- CSS -->
+    <title>The Experiment Factory ax-cpt</title>
+    
     <link rel="stylesheet" type="text/css" href="jspsych.css">
     <link rel="stylesheet" type="text/css" href="default_style.css">
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-
 <body>
+    <!-- Container for jsPsych -->
+    <div id="jspsych-target"></div>
 
-<!-- Container for jsPsych -->
-<div id="jspsych-target"></div>
+    <!-- JS libraries -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/math.min.js"></script>
+    <script src="js/jspsych/jspsych.js"></script>
+    <script src="js/jspsych/plugins/jspsych-text.js"></script>
+    <script src="js/jspsych/poldrack_plugins/jspsych-poldrack-text.js"></script>
+    <script src="js/jspsych/poldrack_plugins/jspsych-poldrack-instructions.js"></script>
+    <script src="js/jspsych/plugins/jspsych-call-function.js"></script>
+    <script src="js/jspsych/poldrack_plugins/jspsych-attention-check.js"></script>
+    <script src="js/jspsych/poldrack_plugins/jspsych-poldrack-single-stim.js"></script>
+    <script src="js/jspsych/plugins/jspsych-survey-text.js"></script>
+    <script src="js/jspsych/poldrack_plugins/jspsych-single-stim-button.js"></script>
+    <script src="js/jspsych/poldrack_plugins/poldrack_utils.js"></script>
+    <script src="experiment.js"></script>
 
-<!-- JS Libraries -->
-<script src="js/jquery.min.js"></script>
-<script src="js/math.min.js"></script>
-<script src="js/jspsych/jspsych.js"></script>
-<script src="js/jspsych/plugins/jspsych-text.js"></script>
-<script src="js/jspsych/poldrack_plugins/jspsych-poldrack-text.js"></script>
-<script src="js/jspsych/poldrack_plugins/jspsych-poldrack-instructions.js"></script>
-<script src="js/jspsych/plugins/jspsych-call-function.js"></script>
-<script src="js/jspsych/poldrack_plugins/jspsych-attention-check.js"></script>
-<script src="js/jspsych/poldrack_plugins/jspsych-poldrack-single-stim.js"></script>
-<script src="js/jspsych/plugins/jspsych-survey-text.js"></script>
-<script src="js/jspsych/poldrack_plugins/jspsych-single-stim-button.js"></script>
-<script src="js/jspsych/poldrack_plugins/poldrack_utils.js"></script>
+    <script>
+    $(document).ready(function() {
 
-<!-- Your experiment code -->
-<script src="experiment.js"></script>
+        jsPsych.init({
+            timeline: ax_cpt_experiment,
+            display_element: document.getElementById('jspsych-target'), // must be a DOM element
+            fullscreen: false, // disable for iframe testing
 
-<script>
-$(document).ready(function() {
+            // optional: add participantID to every trial
+            on_trial_finish: function(data){
+                var urlParams = new URLSearchParams(window.location.search);
+                var participant_id = urlParams.get('participantID'); // ?participantID=...
+                if(participant_id) {
+                    jsPsych.data.addProperties({ participant_id: participant_id });
+                }
+            },
 
-    jsPsych.init({
-        timeline: ax_cpt_experiment,
-        display_element: "jspsych-target",  // matches div above
-        fullscreen: true,
+            // when the experiment finishes
+            on_finish: function() {
+                var jspsych_data = jsPsych.data.get().csv();
 
-        // optional: add ID on each trial
-        on_trial_finish: function(data){
-            if (typeof addID === "function") {
-                addID('ax-cpt');
+                // debug: log in console first
+                console.log("jsPsych CSV data:", jspsych_data);
+
+                // send data to Qualtrics Embedded Data
+                window.parent.postMessage({
+                    type: 'jspsych-data',
+                    data: jspsych_data
+                }, "*");
             }
-        },
+        });
 
-        // send data to Qualtrics at the end
-        on_finish: function() {
-            // get participantID from query string
-            var urlParams = new URLSearchParams(window.location.search);
-            var participant_id = urlParams.get('participantID'); // iframe should include ?participantID=
-
-            // add participantID to every trial
-            jsPsych.data.addProperties({ participant_id: participant_id });
-
-            // get all jsPsych data as CSV
-            var jspsych_data = jsPsych.data.get().csv();
-
-            // send data to Qualtrics Embedded Data
-            window.parent.postMessage({
-                type: 'jspsych-data',
-                data: jspsych_data
-            }, "*");
-        }
     });
-
-});
-</script>
+    </script>
 </body>
 </html>

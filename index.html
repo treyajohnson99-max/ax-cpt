@@ -1,57 +1,57 @@
-<!DOCTYPE html><html class=''>
+<!DOCTYPE html>
+<html>
 <head>
-    <meta charset='UTF-8'>
+    <meta charset="UTF-8">
     <meta name="robots" content="noindex">
     <title>The Experiment Factory ax-cpt</title>
-    
-<link rel='stylesheet' type='text/css' href='jspsych.css'>
-<link rel='stylesheet' type='text/css' href='default_style.css'>
-<link rel='stylesheet' type='text/css' href='style.css'>
+    <link rel="stylesheet" type="text/css" href="jspsych.css">
+    <link rel="stylesheet" type="text/css" href="default_style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-
 <body>
-<script src='js/jquery.min.js'></script>
-<script src='js/math.min.js'></script>
-<script src='js/jspsych/jspsych.js'></script>
-<script src='js/jspsych/plugins/jspsych-text.js'></script>
-<script src='js/jspsych/poldrack_plugins/jspsych-poldrack-text.js'></script>
-<script src='js/jspsych/poldrack_plugins/jspsych-poldrack-instructions.js'></script>
-<script src='js/jspsych/plugins/jspsych-call-function.js'></script>
-<script src='js/jspsych/poldrack_plugins/jspsych-attention-check.js'></script>
-<script src='js/jspsych/poldrack_plugins/jspsych-poldrack-single-stim.js'></script>
-<script src='js/jspsych/plugins/jspsych-survey-text.js'></script>
-<script src='js/jspsych/poldrack_plugins/jspsych-single-stim-button.js'></script>
-<script src='js/jspsych/poldrack_plugins/poldrack_utils.js'></script>
-<script src='experiment.js'></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/math.min.js"></script>
+<script src="js/jspsych/jspsych.js"></script>
+<script src="js/jspsych/plugins/jspsych-text.js"></script>
+<script src="js/jspsych/poldrack_plugins/jspsych-poldrack-text.js"></script>
+<script src="js/jspsych/poldrack_plugins/jspsych-poldrack-instructions.js"></script>
+<script src="js/jspsych/plugins/jspsych-call-function.js"></script>
+<script src="js/jspsych/poldrack_plugins/jspsych-attention-check.js"></script>
+<script src="js/jspsych/poldrack_plugins/jspsych-poldrack-single-stim.js"></script>
+<script src="js/jspsych/plugins/jspsych-survey-text.js"></script>
+<script src="js/jspsych/poldrack_plugins/jspsych-single-stim-button.js"></script>
+<script src="js/jspsych/poldrack_plugins/poldrack_utils.js"></script>
+<script src="experiment.js"></script>
 
 <script>
-$( document ).ready(function() {
+$(document).ready(function() {
+    jsPsych.init({
+        timeline: ax_cpt_experiment,
+        display_element: "getDisplayElement",
+        fullscreen: true,
 
-jsPsych.init({
-    timeline: ax_cpt_experiment,
-    display_element: "getDisplayElement",
-    fullscreen: true,
+        on_trial_finish: function(data){
+            addID('ax-cpt'); // keeps your ID function if you use it
+        },
 
-    // optional: add ID on each trial
-    on_trial_finish: function(data){
-        addID('ax-cpt');
-    },
+        on_finish: function() {
+            // get participantID from query string
+            var urlParams = new URLSearchParams(window.location.search);
+            var participant_id = urlParams.get('participantID'); // make sure iframe uses ?participantID=...
 
-    on_finish: function(){
-        // attach participant ID from Qualtrics query string
-        var urlParams = new URLSearchParams(window.location.search);
-        var participant_id = urlParams.get('participantID'); // pid is the parameter name from Qualtrics
-        jsPsych.data.addProperties({ participant_id: participant_id });
+            // add participantID to every trial
+            jsPsych.data.addProperties({ participant_id: participant_id });
 
-        // get all jsPsych data as CSV
-        var jspsych_data = jsPsych.data.get().csv();
+            // get all jsPsych data as CSV
+            var jspsych_data = jsPsych.data.get().csv();
 
-        // send to Qualtrics Embedded Data
-        window.parent.postMessage({
-            type: 'jspsych-data',
-            data: jspsych_data
-        }, "*");
-    }
+            // send to Qualtrics Embedded Data
+            window.parent.postMessage({
+                type: 'jspsych-data',
+                data: jspsych_data
+            }, "*");
+        }
+    });
 });
 </script>
 </body>

@@ -28,25 +28,30 @@
 $( document ).ready(function() {
 
 jsPsych.init({
-        timeline: ax_cpt_experiment,
-        display_element: "getDisplayElement",
-        fullscreen: true,
+    timeline: ax_cpt_experiment,
+    display_element: "getDisplayElement",
+    fullscreen: true,
 
-        // optional: keep this if you want the ID added on each trial
-        on_trial_finish: function(data){
-            addID('ax-cpt');
-        },
+    // optional: add ID on each trial
+    on_trial_finish: function(data){
+        addID('ax-cpt');
+    },
 
-        // send data to Qualtrics Embedded Data at the end
-        on_finish: function(){
-            var jspsych_data = jsPsych.data.get().csv();
+    on_finish: function(){
+        // attach participant ID from Qualtrics query string
+        var urlParams = new URLSearchParams(window.location.search);
+        var participant_id = urlParams.get('pid'); // pid is the parameter name from Qualtrics
+        jsPsych.data.addProperties({ participant_id: participant_id });
 
-            window.parent.postMessage({
-                type: 'jspsych-data',
-                data: jspsych_data
-            }, "*");
-        }
-    });
+        // get all jsPsych data as CSV
+        var jspsych_data = jsPsych.data.get().csv();
+
+        // send to Qualtrics Embedded Data
+        window.parent.postMessage({
+            type: 'jspsych-data',
+            data: jspsych_data
+        }, "*");
+    }
 });
 </script>
 </body>

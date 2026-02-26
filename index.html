@@ -40,7 +40,7 @@ jsPsych.init({
     on_finish: function(){
         // attach participant ID from Qualtrics query string
         var urlParams = new URLSearchParams(window.location.search);
-        var participant_id = urlParams.get('pid'); // pid is the parameter name from Qualtrics
+        var participant_id = urlParams.get('participantID'); // pid is the parameter name from Qualtrics
         jsPsych.data.addProperties({ participant_id: participant_id });
 
         // get all jsPsych data as CSV

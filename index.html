@@ -27,44 +27,27 @@
 <script>
 $( document ).ready(function() {
 
-    jsPsych.init({
-             timeline: ax_cpt_experiment,
-             display_element: "getDisplayElement",
-             fullscreen: true,
-             on_trial_finish: function(data){
-               addID('ax-cpt')
-             },
+jsPsych.init({
+        timeline: ax_cpt_experiment,
+        display_element: "getDisplayElement",
+        fullscreen: true,
 
-             on_finish: function(data){
+        // optional: keep this if you want the ID added on each trial
+        on_trial_finish: function(data){
+            addID('ax-cpt');
+        },
 
-                 // Serialize the data
-                 var promise = new Promise(function(resolve, reject) {
-                     var data = jsPsych.data.dataAsJSON();
-                     resolve(data);
-                 })
+        // send data to Qualtrics Embedded Data at the end
+        on_finish: function(){
+            var jspsych_data = jsPsych.data.get().csv();
 
-                 promise.then(function(data) {
-
-
-                     $.ajax({
-                         type: "POST",
-                         url: '/save',
-                         data: { "data": data },
-                         success: function(){ document.location = "/next" },
-                         dataType: "application/json",
-
-                         // Endpoint not running, local save
-                         error: function(err) {
-
-                             if (err.status == 200){
-                                 document.location = "/next";
-                             } else {
-                                 // If error, assue local save
-                                 jsPsych.data.localSave('ax-cpt_results.csv', 'csv');
-                             }
-                         }
-                     });
-                 })
+            window.parent.postMessage({
+                type: 'jspsych-data',
+                data: jspsych_data
+            }, "*");
+        }
+    });
+});
              }
 
       });

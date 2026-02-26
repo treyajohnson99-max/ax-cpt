@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="robots" content="noindex">
-    <title>The Experiment Factory ax-cpt</title>
+    <title>The Experiment Factory AX-CPT</title>
+
+    <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="jspsych.css">
     <link rel="stylesheet" type="text/css" href="default_style.css">
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
+
 <body>
+
+<!-- Container for jsPsych -->
+<div id="jspsych-target"></div>
+
+<!-- JS Libraries -->
 <script src="js/jquery.min.js"></script>
 <script src="js/math.min.js"></script>
 <script src="js/jspsych/jspsych.js"></script>
@@ -21,23 +29,30 @@
 <script src="js/jspsych/plugins/jspsych-survey-text.js"></script>
 <script src="js/jspsych/poldrack_plugins/jspsych-single-stim-button.js"></script>
 <script src="js/jspsych/poldrack_plugins/poldrack_utils.js"></script>
+
+<!-- Your experiment code -->
 <script src="experiment.js"></script>
 
 <script>
 $(document).ready(function() {
+
     jsPsych.init({
         timeline: ax_cpt_experiment,
-        display_element: "getDisplayElement",
+        display_element: "jspsych-target",  // matches div above
         fullscreen: true,
 
+        // optional: add ID on each trial
         on_trial_finish: function(data){
-            addID('ax-cpt'); // keeps your ID function if you use it
+            if (typeof addID === "function") {
+                addID('ax-cpt');
+            }
         },
 
+        // send data to Qualtrics at the end
         on_finish: function() {
             // get participantID from query string
             var urlParams = new URLSearchParams(window.location.search);
-            var participant_id = urlParams.get('participantID'); // make sure iframe uses ?participantID=...
+            var participant_id = urlParams.get('participantID'); // iframe should include ?participantID=
 
             // add participantID to every trial
             jsPsych.data.addProperties({ participant_id: participant_id });
@@ -45,13 +60,14 @@ $(document).ready(function() {
             // get all jsPsych data as CSV
             var jspsych_data = jsPsych.data.get().csv();
 
-            // send to Qualtrics Embedded Data
+            // send data to Qualtrics Embedded Data
             window.parent.postMessage({
                 type: 'jspsych-data',
                 data: jspsych_data
             }, "*");
         }
     });
+
 });
 </script>
 </body>
